@@ -1,3 +1,4 @@
+# Okay, so if you want to make a game, make a self contained function here that can take the target pool as an input
 import ctypes
 import datetime
 import os
@@ -11,10 +12,12 @@ from operator import itemgetter
 
 
 class _CursorInfo(ctypes.Structure):
+    """The current state of mr blinky"""
     _fields_ = [("size", ctypes.c_int),
                 ("visible", ctypes.c_byte)]
 
 def hide_cursor():
+    """Hides the blinky cursor when called"""
     if os.name == 'nt':
         ci = _CursorInfo()
         handle = ctypes.windll.kernel32.GetStdHandle(-11)
@@ -26,6 +29,7 @@ def hide_cursor():
         sys.stdout.flush()
 
 def show_cursor():
+    """Shows the blinky cursor"""
     if os.name == 'nt':
         ci = _CursorInfo()
         handle = ctypes.windll.kernel32.GetStdHandle(-11)
@@ -39,21 +43,23 @@ def show_cursor():
 def cacheGame(main, huntList, gameType):
     """
     This function takes the final huntList and dumps and serialises until the next time the program runs
-    :param main:
-    :param huntList:
-    :param gameType:
+    :param main: GameEngine's main class
+    :param huntList: the list of pairs/targets for the game
+    :param gameType: what's the name of the game?
     :return:
     """
-    if not os.path.exists(main.cacheDir):
+    if not os.path.exists(main.cacheDir):  # if the cache dir doesnt exist, make it
         os.mkdir(main.cacheDir)
-    if not os.path.exists("{}/{}".format(main.cacheDir, gameType.lower())):
+    if not os.path.exists("{}/{}".format(main.cacheDir, gameType.lower())):  # make a folder for this game type
         os.mkdir("{}/{}".format(main.cacheDir, gameType.lower()))
 
     with open("{}/{}/{}.txt".format(main.cacheDir, gameType.lower(), time.strftime("%Y%m%d%H%M%S", time.gmtime())),
               "wb") as fp:
-        pickle.dump(huntList, fp)
+        pickle.dump(huntList, fp)  # serialise and save the current game, LUV U PICKLE <3
 
     while len(os.listdir("{}/{}".format(main.cacheDir, gameType.lower()))) > main.weeksWithoutRepeat:
+        # we only need 6 games history, so kill the rest off
+        # aka while we have more than 6 files, delete the oldest file
         oldest_file = min(os.listdir("{}/{}".format(main.cacheDir, gameType.lower())),
                           key=lambda x: datetime.datetime.strptime(
                               time.ctime(
@@ -65,9 +71,9 @@ def cacheGame(main, huntList, gameType):
 def preventRepeat(main, pair, gameType):
     """
     This function makes sure that the member gets a unique target for at least [weeksWithoutRepeat] weeks
-    :param main:
-    :param pair:
-    :param gameType:
+    :param main: GameEngine's main class
+    :param pair: the pair of members youre trying not to repeat
+    :param gameType: what kind of game is this?
     :return:
     """
     if not os.path.exists("{}/{}".format(main.cacheDir,
@@ -94,8 +100,8 @@ def theHunt(main):
     main._clearScreen()
     
     print("Generating targets for", len(main.targetPool), "members...")
-    availableTargets = []
-    huntList = []
+    availableTargets = []  # targets who havent been assigned yet
+    huntList = []  # the game's current pairs (targets)
     
     for member in main.targetPool:
         availableTargets.append(member)

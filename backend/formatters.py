@@ -1,4 +1,5 @@
 class formatters:
+    """a class for all my fanci colours :3 """
     underline = '\033[4m'
     purple = '\033[95m'
     bold = '\033[1m'

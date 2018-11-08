@@ -17,12 +17,15 @@ from ctypes import wintypes
 
 class Main:
     def __init__(self):
-        self.cacheDir = "cache"
-        self.pprint = pprint.PrettyPrinter().pprint
-        self.offline = False
-        self.values = []
-        self.pastHunt = []
-        self.weeksWithoutRepeat = 6
+        """Defines variables that the main class will use"""
+        self.cacheDir = "cache"  # the directory of the cache
+        self.pprint = pprint.PrettyPrinter().pprint  # pprint instance so i dont need to type as much
+        self.offline = False  # used to flag if the code is running without google, can be manually set
+        self.values = []  # temporary variable holding EVERYTHING google sends back
+        self.pastHunt = []  # a list holding all past hunts/teams/whatever tf you want
+        self.targetPool = []   # a list of members opted in the hunt this week
+        self.optOut = []  # a list of members opted out, deprecated
+        self.weeksWithoutRepeat = 6  # how many weeks gameEngine should try not to repeat for
         self.logo = """ 
  _____                                         _
 |  __ \                                       (_)
@@ -32,16 +35,15 @@ class Main:
  \____/\__,_|_| |_| |_|\___|  \___|_| |_|\__, |_|_| |_|\___|
                                           __/ |
                                          |___/
-"""
-        
+"""  # The logo, funnily enough
+
         ### Overrides ###
-        self.debugMode = True
-        self.detailMode = None
-        self.incCouncil = None
-        self.targetPool = []
-        self.optOut = []
+        self.debugMode = False  # disables cosmetics, and enables more verbose outputs
+        self.detailMode = None  # detailed output by default, where applicable
+        self.incCouncil = None  # default to include council, and not ask
 
     def uselessCosmetics(self):
+        """Completely useless cosmetic code that does nothing but make things look *fanci*"""
         lines = None
         kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
         user32 = ctypes.WinDLL('user32', use_last_error=True)
@@ -73,16 +75,18 @@ class Main:
             user32.ShowWindow(hWnd, SW_MAXIMIZE)
 
     def _clearScreen(self):
+        """Wrapper function to clear the screen and keep the logo on screen"""
         os.system("cls")
         if not self.debugMode:
             print(self.logo)
         print("")
 
     def _cleanSlate(self):
+        """Nukes all of GameEngine's stored data for a clean slate, gettit?"""
         print(formatters.formatters.red, "CLEARING ALL SAVED DATA", formatters.formatters.default)
         sleep(1)
         print("Deleting OptOut.txt")
-        try:
+        try: # Using loads of try and except conditions because i dont want the entire function to stop if one fails
             os.unlink("OptOut.txt")
         except OSError:
             pass
@@ -97,11 +101,11 @@ class Main:
         except OSError:
             pass
         print("Deleting cache dir")
-        shutil.rmtree("cache", ignore_errors=True)
+        shutil.rmtree("cache", ignore_errors=True) # rmtree removes a directory and EVERYTHING in it, no matter what
         shutil.rmtree("DEBUGCache", ignore_errors=True)
 
     def _options(self):
-        # Check if Council included in target pool
+        """Check if Council to be included in target pool"""
         if self.incCouncil is None:
             council = input("Opt in Council? ")
             self.incCouncil = RH.yesorno(council)
@@ -112,14 +116,15 @@ class Main:
         self._clearScreen()
 
     def _processMembers(self):
-        data = defaultdict()
+        data = defaultdict()  # creates an empty, assignable dictionary
         for row in self.values:
             try:
-                if row[5] == "TRUE" and "{} {}".format(row[1], row[2]) not in self.optOut:
-                    if row[0] == "Council" and not self.incCouncil:
+                if row[5] == "TRUE" and "{} {}".format(row[1], row[2]) not in self.optOut: #  is this twat in the opt out list?
+                    if row[0] == "Council" and not self.incCouncil:  # is this a council member, and are we including them?
                         if self.debugMode:
                             print("{} is Council, and council are opted out".format(row[1] + " " + row[2]))
                     else:
+                        # the basic data structure of a member, will be replaced with a class rather than a dictionary
                         data = {'rank': row[0],
                                 'name': row[1] + " " + row[2],
                                 'alias': row[7],
@@ -127,17 +132,21 @@ class Main:
                                 'kills': float(re.sub("[^0-9]", "", str(row[8]))),
                                 'credits': float(re.sub("[^0-9]", "", str(row[9])))
                                 }
-                        self.targetPool.append(data)
+                        self.targetPool.append(data)  # add this member to the targetPool
                         if self.debugMode:
                             print("{} has been opted in".format(data['name']))
                 elif row[5] == "FALSE" and row[0] != "Council" and "{} {}".format(row[1], row[2]) not in self.optOut:
+                    # Is this person set to be opted out on the killSheet?
                     if self.debugMode:
                         print("{} is set to opt out on the sheet".format(row[1] + " " + row[2]))
             except Exception as e:
+                # if this code EVER hits an error, i can put money on it being a formatting error on the killSheet
                 print("Unable to add {} due to invalid data formatting || {}".format(row[1], e))
         if self.debugMode:
             print("{} members opted in\n{} members opted out".format(len(self.targetPool), len(self.values)-len(self.targetPool)))
         if len(self.targetPool) == 1 or len(self.targetPool) % 2 == 1:
+            # You need an even number to balance the games, and gameEngine cant yet support one person being targeted
+            # by two people at once
             print("{}Even number of members required for hunt to be possible{}".format(formatters.formatters.red, formatters.formatters.default))
             input("Press any key to exit")
             exit()
@@ -145,23 +154,24 @@ class Main:
     def mainMenu(self):
         if not self.debugMode:
             self.uselessCosmetics()
-            if self.offline:
-                self.logo = "{} OFFLINE MODE {}\n{}".format(formatters.red, formatters.default, self.logo)
-
-            for char in self.logo:
+            if self.offline:  # let the user know game engine is running offline
+                self.logo = "{} OFFLINE MODE {}\n{}".format(formatters.formatters.red,
+                                                            formatters.formatters.default,
+                                                            self.logo)
+            for char in self.logo: # fanci typewriter logo printing for boot
                 if char != " ":
                     sleep(0.012)
-                sys.stdout.write(char)
+                sys.stdout.write(char)  # ewwwww, its almost c++
                 sys.stdout.flush()
             print("\n")
 
-        self.values = backendGoogle.getValues(self.offline)
+        self.values = backendGoogle.getValues(self.offline)  # get the killSheet data from google sheets
         self._options()
         self._processMembers()
 
         choosing = True
         self._clearScreen()
-        while choosing:
+        while choosing:  # a menu loop O_O
             self._clearScreen()
             choosing = False
             print("{} members opted in\n".format(len(self.targetPool)))
@@ -186,8 +196,9 @@ class Main:
 
 
 if __name__ == "__main__":
-    assassin = Main()
-    assassin.mainMenu()
+    # the code wont execute if you import it, only if you open it
+    assassin = Main()  # run the innit code once ONLY (apparently this was necessary :( )
+    assassin.mainMenu()  # BOOT
 
 
         

@@ -21,30 +21,33 @@ class SMEmail:
 
     @staticmethod
     def greetingGen():
+        """Generates a greeting"""
         greetings = ["Hello,", "Hi,", "Hi there!", "Greetings,", "Top of the evenin to ya,", "Boo!"]
         return random.choice(greetings)
 
     def sendEmails(self, email):
-        if not self.loggedIn:
+        """Sends the emails, after making you log in"""
+        if not self.loggedIn:  # if they havent logged in yet
             os.system("cls")
             while not self.loggedIn:
                 emailAddr = input("Email: ")
-                password = getpass.getpass()
+                password = getpass.getpass()  # hide their password entry
                 try:
-                    s.login(emailAddr, password)
+                    s.login(emailAddr, password)  # try and login
                 except smtplib.SMTPAuthenticationError:
                     os.system("cls")
                     print("{}Login Failed{}".format(formatters.red, formatters.default))
-                finally:
+                finally:  # if successful login with no errors
                     self.loggedIn = True
                     os.system("cls")
-                    print("{}Logged in!{}".format(formatters.green, formatters.default))
-        print("Sending email to", email['To'])
-        s.send_message(email)
+                    print("{}Logged in as {}!{}".format(formatters.green, emailAddr, formatters.default))
+        print("Sending email to", email['To'])  # user output
+        s.send_message(email)  # send
 
 
     @staticmethod
     def assembleEmail(html, to, subject="Your Target For {}/{}".format(datetime.datetime.now().day, datetime.datetime.now().month)):
+        """Combines all the components of an email, and puts it in an object"""
         msg = MIMEMultipart()
         msg['From'] = "lincolnassassin@lincolnsu.com"
         if "None" in to:
@@ -59,18 +62,20 @@ class SMEmail:
         return msg
 
     def huntSendTargets(self, targets):
+        """The hunts send targets code"""
         i = 0
         for pair in targets:
             i += 1
-            html = open("{}/hunt.html".format(emailTemplateLocation)).read()
+            html = open("{}/hunt.html".format(emailTemplateLocation)).read()  # Get the template then edit it
             html = html.replace("[Greeting]", self.greetingGen()).replace("[AddressName]", pair[0]['name']).replace("[TargetName]", pair[1]['name'])
-            msg = self.assembleEmail(html, pair[0]['id'])
+            msg = self.assembleEmail(html, pair[0]['id'])  # assemble the email
             if msg is None:
-                print("Not sending Email to {}|Reason: No valid ID/Email".format(pair[0]['name']))
+                print("Not sending Email to {}|Reason: No valid ID/Email".format(pair[0]['name']))  # y u no send
             else:
-                self.sendEmails(msg)
+                self.sendEmails(msg)  # call the send email code
 
     def VIPSendTargets(self, team, teamleader):
+        """VIP's send targets code, NOT FINISHED"""
         i=0
         teamFormatted = ""
         for name in sorted(team):
