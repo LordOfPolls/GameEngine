@@ -1,0 +1,6 @@
+### For those unfamiliar with Python, and pip, use this command in CMD.exe from this folder "pip install -r requirements.txt"
+### This of course assumes you have both python and pip installed
+
+google-api-python-client
+oauth2client
+httplib2
