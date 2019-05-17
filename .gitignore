@@ -271,3 +271,5 @@ offlineMemberList
 GameEngine\DEBUGcache
 cache
 DEBUGcache
+backend/token.pickle
+client_secret.json

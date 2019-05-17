@@ -144,12 +144,12 @@ class Main:
                 print("Unable to add {} due to invalid data formatting || {}".format(row[1], e))
         if self.debugMode:
             print("{} members opted in\n{} members opted out".format(len(self.targetPool), len(self.values)-len(self.targetPool)))
-        if len(self.targetPool) == 1 or len(self.targetPool) % 2 == 1:
+        # if len(self.targetPool) == 1 or len(self.targetPool) % 2 == 1:
             # You need an even number to balance the games, and gameEngine cant yet support one person being targeted
             # by two people at once
-            print("{}Even number of members required for hunt to be possible{}".format(formatters.formatters.red, formatters.formatters.default))
-            input("Press any key to exit")
-            exit()
+            # print("{}Even number of members required for hunt to be possible{}".format(formatters.formatters.red, formatters.formatters.default))
+            # input("Press any key to exit")
+            # exit()
 
     def mainMenu(self):
         if not self.debugMode:
