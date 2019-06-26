@@ -3,4 +3,5 @@ from . import formatters
 from . import games
 from . import targetSend
 from . import responseHandler
+from . import cosmetics
 
