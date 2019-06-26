@@ -1,6 +1,8 @@
 import os
 import msvcrt
+import cursor
 from . import formatters
+
 
 #add items to this list to add items to the menu
 # Key:
@@ -31,8 +33,9 @@ class Engine:
                 item[1] = item[1].replace("()", "(self.CoreLoop)")
 
     def _runSelected(self):
+        cursor.show()
         print("Running", self.options[self.location][0])
-        lastRender = ""
+        self.lastRender = ""
         try:
             if self.CoreLoop is not None:
                 exec(self.options[self.location][1])
@@ -65,7 +68,6 @@ class Engine:
             self.location = len(self.options) - 1
 
     def _render(self):
-
         num = 0
         render = ""
         for item in self.options:
@@ -84,10 +86,12 @@ class Engine:
                 self.CoreLoop.clearScreen()
             else:
                 os.system("cls")
+            cursor.hide()
             print(render)
         self.lastRender = render
 
     def loop(self):
+        # self._render()
         while True:
             self._input()
             self._render()
