@@ -2,18 +2,14 @@ import os
 import pprint
 import re
 import shutil
-import sys
 from collections import defaultdict
 from time import sleep
-import ctypes
-import msvcrt
-import subprocess
 
 from backend import backendGoogle
 from backend import games
 from backend import formatters
 from backend import responseHandler as RH
-from ctypes import wintypes
+from backend import cosmetics
 
 class Main:
     def __init__(self):
@@ -26,53 +22,13 @@ class Main:
         self.targetPool = []   # a list of members opted in the hunt this week
         self.optOut = []  # a list of members opted out, deprecated
         self.weeksWithoutRepeat = 6  # how many weeks gameEngine should try not to repeat for
-        self.logo = """ 
- _____                                         _
-|  __ \                                       (_)
-| |  \/ __ _ _ __ ___   ___    ___ _ __   __ _ _ _ __   ___
-| | __ / _` | '_ ` _ \ / _ \  / _ \ '_ \ / _` | | '_ \ / _ \\
-| |_\ \ (_| | | | | | |  __/ |  __/ | | | (_| | | | | |  __/
- \____/\__,_|_| |_| |_|\___|  \___|_| |_|\__, |_|_| |_|\___|
-                                          __/ |
-                                         |___/
-"""  # The logo, funnily enough
+        self.logo = cosmetics.logo
 
         ### Overrides ###
         self.debugMode = False  # disables cosmetics, and enables more verbose outputs
-        self.detailMode = None  # detailed output by default, where applicable
-        self.incCouncil = None  # default to include council, and not ask
+        self.detailMode = True  # detailed output by default, where applicable
+        self.incCouncil = True  # default to include council, and not ask
 
-    def uselessCosmetics(self):
-        """Completely useless cosmetic code that does nothing but make things look *fanci*"""
-        lines = None
-        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        user32 = ctypes.WinDLL('user32', use_last_error=True)
-
-        SW_MAXIMIZE = 3
-
-        kernel32.GetConsoleWindow.restype = wintypes.HWND
-        kernel32.GetLargestConsoleWindowSize.restype = wintypes._COORD
-        kernel32.GetLargestConsoleWindowSize.argtypes = (wintypes.HANDLE,)
-        user32.ShowWindow.argtypes = (wintypes.HWND, ctypes.c_int)
-
-        fd = os.open('CONOUT$', os.O_RDWR)
-        try:
-            hCon = msvcrt.get_osfhandle(fd)
-            max_size = kernel32.GetLargestConsoleWindowSize(hCon)
-            if max_size.X == 0 and max_size.Y == 0:
-                raise ctypes.WinError(ctypes.get_last_error())
-        finally:
-            os.close(fd)
-        cols = max_size.X
-        hWnd = kernel32.GetConsoleWindow()
-        if cols and hWnd:
-            if lines is None:
-                lines = max_size.Y
-            else:
-                lines = max(min(lines, 9999), max_size.Y)
-            subprocess.check_call('mode.com con cols={} lines={}'.format(
-                cols, lines))
-            user32.ShowWindow(hWnd, SW_MAXIMIZE)
 
     def _clearScreen(self):
         """Wrapper function to clear the screen and keep the logo on screen"""
@@ -83,10 +39,11 @@ class Main:
 
     def _cleanSlate(self):
         """Nukes all of GameEngine's stored data for a clean slate, gettit?"""
+        os.system("cls")
         print(formatters.formatters.red, "CLEARING ALL SAVED DATA", formatters.formatters.default)
         sleep(1)
         print("Deleting OptOut.txt")
-        try: # Using loads of try and except conditions because i dont want the entire function to stop if one fails
+        try:  # Using loads of try and except conditions because i dont want the entire function to stop if one fails
             os.unlink("OptOut.txt")
         except OSError:
             pass
@@ -101,8 +58,31 @@ class Main:
         except OSError:
             pass
         print("Deleting cache dir")
-        shutil.rmtree("cache", ignore_errors=True) # rmtree removes a directory and EVERYTHING in it, no matter what
+        shutil.rmtree("cache", ignore_errors=True)  # rmtree removes a directory and EVERYTHING in it, no matter what
         shutil.rmtree("DEBUGCache", ignore_errors=True)
+        print("Clean Slate completed...")
+        print("Exiting Game Engine in...", end="\r")
+        print("Exiting Game Engine in... 3", end="\r")
+        sleep(1)
+        print("\rExiting Game Engine in... 2", end="\r")
+        sleep(1)
+        print("\rExiting Game Engine in... 1", end="\r")
+        sleep(1)
+        exit(0)
+
+    def _dumpAndOpen(self):
+        """Dumps the current targetpool to a file and opens it"""
+        f = open("temp.txt", "w")
+        f.write("**KILLSHEET DUMP**\n\n")
+        for member in self.targetPool:
+            f.write(member['name'])
+            f.write("\n")
+        f.close()
+        self._clearScreen()
+        print("Waiting for notepad to close...")
+        os.system("notepad.exe temp.txt")
+        os.unlink("temp.txt")
+        print("File deleted, resuming")
 
     def _options(self):
         """Check if Council to be included in target pool"""
@@ -153,24 +133,20 @@ class Main:
 
     def mainMenu(self):
         if not self.debugMode:
-            self.uselessCosmetics()
+            cosmetics.fullScreen()
             if self.offline:  # let the user know game engine is running offline
-                self.logo = "{} OFFLINE MODE {}\n{}".format(formatters.formatters.red,
+                cosmetics.logo = "{} OFFLINE MODE {}\n{}".format(formatters.formatters.red,
                                                             formatters.formatters.default,
                                                             self.logo)
-            for char in self.logo: # fanci typewriter logo printing for boot
-                if char != " ":
-                    sleep(0.012)
-                sys.stdout.write(char)  # ewwwww, its almost c++
-                sys.stdout.flush()
-            print("\n")
+            cosmetics.printLogo()
 
+        print("Loading KillSheet Data...")
         self.values = backendGoogle.getValues(self.offline)  # get the killSheet data from google sheets
-        self._options()
         self._processMembers()
 
         choosing = True
         self._clearScreen()
+        self._options()
         while choosing:  # a menu loop O_O
             self._clearScreen()
             choosing = False
@@ -186,9 +162,14 @@ class Main:
                 games.Juggernaut(self)
             elif gameMode == "5":
                 games.TeaParty(self)
-            elif gameMode == "6":
+            elif gameMode.lower() == "c":
                 self._cleanSlate()
                 exit()
+            elif gameMode.lower() == "l":
+                print("dumping killsheet to file...")
+                self._dumpAndOpen()
+                choosing = True  # keep the main menu from closing
+
             else:
                 choosing = True
                 print(formatters.formatters.red, "INVALID CHOICE", formatters.formatters.default)
@@ -199,6 +180,3 @@ if __name__ == "__main__":
     # the code wont execute if you import it, only if you open it
     assassin = Main()  # run the innit code once ONLY (apparently this was necessary :( )
     assassin.mainMenu()  # BOOT
-
-
-        
