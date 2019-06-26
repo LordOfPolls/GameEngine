@@ -10,6 +10,7 @@ from backend import games
 from backend import formatters
 from backend import responseHandler as RH
 from backend import cosmetics
+from backend import menu
 
 class Main:
     def __init__(self):
@@ -22,6 +23,7 @@ class Main:
         self.targetPool = []   # a list of members opted in the hunt this week
         self.optOut = []  # a list of members opted out, deprecated
         self.weeksWithoutRepeat = 6  # how many weeks gameEngine should try not to repeat for
+        self.games = games
         self.logo = cosmetics.logo
 
         ### Overrides ###
@@ -30,7 +32,7 @@ class Main:
         self.incCouncil = True  # default to include council, and not ask
 
 
-    def _clearScreen(self):
+    def clearScreen(self):
         """Wrapper function to clear the screen and keep the logo on screen"""
         os.system("cls")
         if not self.debugMode:
@@ -78,7 +80,7 @@ class Main:
             f.write(member['name'])
             f.write("\n")
         f.close()
-        self._clearScreen()
+        self.clearScreen()
         print("Waiting for notepad to close...")
         os.system("notepad.exe temp.txt")
         os.unlink("temp.txt")
@@ -93,7 +95,7 @@ class Main:
             self.incCouncil = False
 
         # Opt out menu`
-        self._clearScreen()
+        self.clearScreen()
 
     def _processMembers(self):
         data = defaultdict()  # creates an empty, assignable dictionary
@@ -145,35 +147,10 @@ class Main:
         self._processMembers()
 
         choosing = True
-        self._clearScreen()
+        self.clearScreen()
         self._options()
-        while choosing:  # a menu loop O_O
-            self._clearScreen()
-            choosing = False
-            print("{} members opted in\n".format(len(self.targetPool)))
-            gameMode = input("Choose a game mode:\n1)The Hunt\n2)Zombies\n3)VIP\n4)Juggernaut\n5)Tea Party\n\nMode: ")
-            if gameMode == "1":
-                games.theHunt(self)
-            elif gameMode == "2":
-                games.zombies(self)
-            elif gameMode == "3":
-                games.VIP(self)
-            elif gameMode == "4":
-                games.Juggernaut(self)
-            elif gameMode == "5":
-                games.TeaParty(self)
-            elif gameMode.lower() == "c":
-                self._cleanSlate()
-                exit()
-            elif gameMode.lower() == "l":
-                print("dumping killsheet to file...")
-                self._dumpAndOpen()
-                choosing = True  # keep the main menu from closing
-
-            else:
-                choosing = True
-                print(formatters.formatters.red, "INVALID CHOICE", formatters.formatters.default)
-                sleep(2)
+        menuManager = menu.Engine(coreLoop=self)
+        menuManager.loop()
 
 
 if __name__ == "__main__":

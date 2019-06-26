@@ -97,7 +97,7 @@ def preventRepeat(main, pair, gameType):
 
 
 def theHunt(main):
-    main._clearScreen()
+    main.clearScreen()
     
     print("Generating targets for", len(main.targetPool), "members...")
     availableTargets = []  # targets who havent been assigned yet
@@ -126,7 +126,7 @@ def theHunt(main):
         theHunt(main)  # if for whatever reason a good match cant be made, the function gets restarted
         return  # not necesary but looks nicer when debugging
 
-    main._clearScreen()
+    main.clearScreen()
     os.system("cls")
     print("{B}{T} members in the hunt{D}\n".format(B=formatters.bold, D=formatters.default, T=len(main.targetPool)))
     for member in huntList:
@@ -143,7 +143,7 @@ def theHunt(main):
             f.write("{}  ===>  {}\n".format(member[0]['name'], member[1]['name']))
     cacheGame(main, huntList, "theHunt")  # serialise the hunt for next time
     if input("Send target emails?") in ['y', 'yes', 'yep']:
-        main._clearScreen()
+        main.clearScreen()
         targetSend.SMEmail().huntSendTargets(huntList)
 
 def zombies(main):
@@ -159,7 +159,7 @@ def zombies(main):
         names.remove(humanLeader)
         if preventRepeat(main, [patientZero, humanLeader], "zombieGame"):
             repeat = False
-    main._clearScreen()
+    main.clearScreen()
     print("{P}{realName}{D} aka {P}{assassinName}{D} is the leader of the humans".format(P=formatters.purple,
                                                                                          D=formatters.default,
                                                                                          realName=humanLeader['name'],
@@ -178,7 +178,7 @@ def zombies(main):
         cacheGame(main, [patientZero, humanLeader], "zombieGame")
 
 def VIP(main):
-    main._clearScreen()
+    main.clearScreen()
     noKillClub = []
     membersList = []
 
@@ -232,7 +232,7 @@ def VIP(main):
         if cosmetic in ['y', 'yes', 'yep']:
             main.detailMode = True
     if main.detailMode:
-        main._clearScreen()
+        main.clearScreen()
         print(formatters.purple, "Team 1:", formatters.default)
         for member in team1:
             print("Name:{name} aka {alias}|| Kills: {kills}|| Credits {credits}"
@@ -253,7 +253,7 @@ def VIP(main):
     # targetSend.SMEmail().VIPSendTargets(team1, team1Leader)
 
 def Juggernaut(main):
-    main._clearScreen()
+    main.clearScreen()
     hide_cursor()
     startTime = time.time()
     option = 0
@@ -278,7 +278,7 @@ def Juggernaut(main):
         cacheGame(main, main.targetPool[option]['name'], "juggernaut")
 
 def TeaParty(main):
-    main._clearScreen()
+    main.clearScreen()
     icon = """
     ~
     ~
@@ -331,7 +331,7 @@ def TeaParty(main):
             infiltrators.remove(member)
         except ValueError:
             pass
-    main._clearScreen()
+    main.clearScreen()
     print(icon)
     print("The host is", host['name'], "!\n")
     print(formatters.purple, "Bodyguards:", formatters.default)
