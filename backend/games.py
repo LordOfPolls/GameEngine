@@ -127,7 +127,6 @@ def theHunt(main):
         return  # not necesary but looks nicer when debugging
 
     main.clearScreen()
-    os.system("cls")
     print("{B}{T} members in the hunt{D}\n".format(B=formatters.bold, D=formatters.default, T=len(main.targetPool)))
     for member in huntList:
         print("{G}{}{D} is hunting {G}{}{D}".format(member[0]['name'],

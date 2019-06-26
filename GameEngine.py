@@ -144,10 +144,11 @@ class Main:
 
         print("Loading KillSheet Data...")
         self.values = backendGoogle.getValues(self.offline)  # get the killSheet data from google sheets
+        print("Processing members...")
         self._processMembers()
+        print("Ready!")
+        sleep(0.5)
 
-        choosing = True
-        self.clearScreen()
         self._options()
         menuManager = menu.Engine(coreLoop=self)
         menuManager.loop()
