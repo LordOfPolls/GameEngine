@@ -24,7 +24,7 @@ class Main:
         self.optOut = []  # a list of members opted out, deprecated
         self.weeksWithoutRepeat = 6  # how many weeks gameEngine should try not to repeat for
         self.games = games
-        self.logo = cosmetics.logo
+        self.logo = cosmetics.getLogo()
 
         ### Overrides ###
         self.debugMode = False  # disables cosmetics, and enables more verbose outputs
@@ -37,6 +37,8 @@ class Main:
         os.system("cls")
         if not self.debugMode:
             print(self.logo)
+        else:
+            print("LordOfPolls' GameEngine".center(65, "="))
         print("")
 
     def _cleanSlate(self):
@@ -140,14 +142,23 @@ class Main:
                 cosmetics.logo = "{} OFFLINE MODE {}\n{}".format(formatters.formatters.red,
                                                             formatters.formatters.default,
                                                             self.logo)
+            sleep(0.5)
             cosmetics.printLogo()
 
-        print("Loading KillSheet Data...")
+        print("Loading KillSheet Data...", end="\r")
+        sleep(0.1)
         self.values = backendGoogle.getValues(self.offline)  # get the killSheet data from google sheets
-        print("Processing members...")
+        sleep(0.1)
+        print(formatters.formatters.green + "Loading KillSheet Data...        " + formatters.formatters.default)
+
+        print("Processing members...", end="\r")
+        sleep(0.1)
         self._processMembers()
+        sleep(0.1)
+        print(formatters.formatters.green + "Processing members...          " + formatters.formatters.default)
+        sleep(0.1)
         print("Ready!")
-        sleep(0.5)
+        sleep(0.7)
 
         self._options()
         menuManager = menu.Engine(coreLoop=self)

@@ -4,9 +4,11 @@ import msvcrt
 import subprocess
 import sys
 import random
+from . import formatters
 from time import sleep
 from ctypes import wintypes
 
+formatters = formatters.formatters()
 logo = """ 
  _____                                         _
 |  __ \                                       (_)
@@ -17,6 +19,15 @@ logo = """
                                           __/ |
                                          |___/
 """  # The logo, funnily enough
+egoline = "LordOfPolls".center(65, "-")  # gimmi dat credit
+
+
+def getLogo(typewriter=False):
+    RetLogo = logo  # avoid editing global logo
+    if not typewriter:
+        RetLogo = formatters.red + RetLogo + formatters.default
+        RetLogo = RetLogo + formatters.blue + "\n" + egoline +formatters.default
+    return RetLogo
 
 
 def fullScreen():
@@ -54,11 +65,18 @@ def fullScreen():
 
 def printLogo():
     """A function to print out the logo with a typewriter effect"""
-    for char in logo:
-        if char != " ":
-            sleep(0.012)
-        sys.stdout.write(char)  # Hi C++
-        sys.stdout.flush()
+    def Typewrite(text):
+        for char in text:
+            if char != " ":
+                sleep(0.012)
+            sys.stdout.write(char)  # Hi  C++
+            sys.stdout.flush()
+    os.system("cls")
+    print(formatters.red, end="")
+    Typewrite(getLogo(typewriter=True))
+    print(formatters.blue)
+    Typewrite(egoline)
+    print(formatters.default)
     print("\n")
 
 def getLoadingMessage(loadingChar):

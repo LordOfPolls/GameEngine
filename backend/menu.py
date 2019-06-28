@@ -1,6 +1,7 @@
 import os
 import msvcrt
 import cursor
+import sys
 from . import formatters
 
 
@@ -68,15 +69,21 @@ class Engine:
             self.location = len(self.options) - 1
 
     def _render(self):
+        # # obtains console width for dynamic center align
+        # try:
+        #     width = os.get_terminal_size().columns
+        # except OSError:
+        #     width = sys.maxsize
         num = 0
         render = ""
         for item in self.options:
             string = item[0]
             if self.location == num:
-                string = "■" + string
-                string = formatters.formatters.bold + string + formatters.formatters.default
+                string = formatters.formatters.bold + "■" + string
             else:
-                string = "□" + string
+                string = formatters.formatters.default + "□" + string
+            # string = string.ljust(width)  # dynamic center align
+            string = string.center(70)  # centers with the logo
             render = render + string + "\n"
             num += 1
 
