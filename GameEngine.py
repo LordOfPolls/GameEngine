@@ -4,7 +4,7 @@ import re
 import shutil
 from collections import defaultdict
 from time import sleep
-
+from string import ascii_lowercase
 from backend import backendGoogle
 from backend import games
 from backend import formatters
@@ -26,11 +26,20 @@ class Main:
         self.games = games
         self.logo = cosmetics.getLogo()
 
-        ### Overrides ###
-        self.debugMode = False  # disables cosmetics, and enables more verbose outputs
-        self.detailMode = True  # detailed output by default, where applicable
-        self.incCouncil = True  # default to include council, and not ask
+        self.dataRows = [  # The row letter for each bit of information on google sheets
+            "A",  # Rank
+            "B",  # First Name
+            "C",  # Last Name
+            "H",  # Alias
+            "D",  # ID/Email
+            "I",  # Kills
+            "J"  # Credits
+        ]
 
+        ### Overrides ###
+        self.debugMode = True  # disables cosmetics, and enables more verbose outputs
+        self.detailMode = False  # detailed output by default, where applicable
+        self.incCouncil = True  # default to include council, and not ask
 
     def clearScreen(self):
         """Wrapper function to clear the screen and keep the logo on screen"""
@@ -65,14 +74,29 @@ class Main:
         shutil.rmtree("cache", ignore_errors=True)  # rmtree removes a directory and EVERYTHING in it, no matter what
         shutil.rmtree("DEBUGCache", ignore_errors=True)
         print("Clean Slate completed...")
-        print("Exiting Game Engine in...", end="\r")
-        print("Exiting Game Engine in... 3", end="\r")
-        sleep(1)
-        print("\rExiting Game Engine in... 2", end="\r")
-        sleep(1)
-        print("\rExiting Game Engine in... 1", end="\r")
-        sleep(1)
+        if not self.debugMode:
+            print("Exiting Game Engine in...", end="\r")
+            print("Exiting Game Engine in... 3", end="\r")
+            sleep(1)
+            print("\rExiting Game Engine in... 2", end="\r")
+            sleep(1)
+            print("\rExiting Game Engine in... 1", end="\r")
+            sleep(1)
         exit(0)
+
+    @staticmethod
+    def alphabet_position(text):
+        LETTERS = {letter: int(index) for index, letter in enumerate(ascii_lowercase, start=0)}
+
+        data = ""
+        for char in text:
+            data += char
+
+        data = data.lower()
+
+        numbers = [LETTERS[character] for character in data if character in LETTERS]
+
+        return numbers
 
     def _dumpAndOpen(self):
         """Dumps the current targetpool to a file and opens it"""
@@ -100,6 +124,7 @@ class Main:
         self.clearScreen()
 
     def _processMembers(self):
+        dataRows = self.alphabet_position(self.dataRows)
         data = defaultdict()  # creates an empty, assignable dictionary
         for row in self.values:
             try:
@@ -109,12 +134,12 @@ class Main:
                             print("{} is Council, and council are opted out".format(row[1] + " " + row[2]))
                     else:
                         # the basic data structure of a member, will be replaced with a class rather than a dictionary
-                        data = {'rank': row[0],
-                                'name': row[1] + " " + row[2],
-                                'alias': row[7],
-                                'id': row[3],
-                                'kills': float(re.sub("[^0-9]", "", str(row[8]))),
-                                'credits': float(re.sub("[^0-9]", "", str(row[9])))
+                        data = {'rank': row[dataRows[0]],
+                                'name': row[dataRows[1]] + " " + row[dataRows[2]],
+                                'alias': row[dataRows[3]],
+                                'id': row[dataRows[4]],
+                                'kills': float(re.sub("[^0-9]", "", str(row[dataRows[5]]))),
+                                'credits': float(re.sub("[^0-9]", "", str(row[dataRows[6]])))
                                 }
                         self.targetPool.append(data)  # add this member to the targetPool
                         if self.debugMode:
@@ -146,19 +171,20 @@ class Main:
             cosmetics.printLogo()
 
         print("Loading KillSheet Data...", end="\r")
-        sleep(0.1)
         self.values = backendGoogle.getValues(self.offline)  # get the killSheet data from google sheets
-        sleep(0.1)
-        print(formatters.formatters.green + "Loading KillSheet Data...        " + formatters.formatters.default)
+        if not self.debugMode:
+            sleep(0.1)
+            print(formatters.formatters.green + "Loading KillSheet Data...        " + formatters.formatters.default)
 
         print("Processing members...", end="\r")
-        sleep(0.1)
         self._processMembers()
-        sleep(0.1)
-        print(formatters.formatters.green + "Processing members...          " + formatters.formatters.default)
-        sleep(0.1)
+        if not self.debugMode:
+            sleep(0.1)
+            print(formatters.formatters.green + "Processing members...          " + formatters.formatters.default)
+
         print("Ready!")
-        sleep(0.7)
+        if not self.debugMode:
+            sleep(0.7)
 
         self._options()
         menuManager = menu.Engine(coreLoop=self)
