@@ -94,6 +94,8 @@ class Engine:
             else:
                 os.system("cls")
             cursor.hide()
+            optInString = "=={} members are opted in==\n".format(len(self.CoreLoop.targetPool))
+            print(optInString.center(65) + "\n")
             print(render)
         self.lastRender = render
 
