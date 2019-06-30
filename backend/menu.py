@@ -11,7 +11,7 @@ from . import formatters
 defaultOptions = [
     ["The Hunt", "self.CoreLoop.games.theHunt()"],
     ["Zombies", "self.CoreLoop.games.zombies()"],
-    ["VIP", "self.CoreLoop.games.VIP()"],
+    ["Teams", "self.CoreLoop.games.Teams()"],
     ["Juggernaut", "self.CoreLoop.games.Juggernaut()"],
     ["Tea Party", "self.CoreLoop.games.TeaParty()"],
     ["Clean Slate", "self.CoreLoop._cleanSlate()"],
