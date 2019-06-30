@@ -10,11 +10,7 @@ from . import targetSend
 from .formatters import formatters
 from operator import itemgetter
 
-#todo: Split games into their own files, because this file is becoming a massive mess
-#todo alternative: Create more abstract functions that can be used by all games, reducing repeated code
-#todo: Add propper matchmaking logic to TheHunt, possibly other games too
-#todo: Split utility functions and game definitions into two separate classes
-#todo: Recode Teams logic to balance teams better
+#removed to get bot to notice
 
 class _CursorInfo(ctypes.Structure):
     """The current state of mr blinky"""
