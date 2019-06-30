@@ -10,6 +10,11 @@ from . import targetSend
 from .formatters import formatters
 from operator import itemgetter
 
+#todo: Split games into their own files, because this file is becoming a massive mess
+#todo alternative: Create more abstract functions that can be used by all games, reducing repeated code
+#todo: Add propper matchmaking logic to TheHunt, possibly other games too
+#todo: Split utility functions and game definitions into two separate classes
+#todo: Recode Teams logic to balance teams better
 
 class _CursorInfo(ctypes.Structure):
     """The current state of mr blinky"""
@@ -66,7 +71,7 @@ def cacheGame(main, huntList, gameType):
                                   os.path.getctime(os.path.join("{}/{}".format(main.cacheDir, gameType.lower()), x))),
                               '%a %b %d %H:%M:%S %Y'))
         os.unlink("{}/{}/{}".format(main.cacheDir, gameType.lower(), oldest_file))
-        
+
 
 def preventRepeat(main, pair, gameType):
     """
@@ -98,11 +103,11 @@ def preventRepeat(main, pair, gameType):
 
 def theHunt(main):
     main.clearScreen()
-    
+
     print("Generating targets for", len(main.targetPool), "members...")
     availableTargets = []  # targets who havent been assigned yet
     huntList = []  # the game's current pairs (targets)
-    
+
     for member in main.targetPool:
         availableTargets.append(member)
     badPair = False
@@ -176,7 +181,7 @@ def zombies(main):
     else:
         cacheGame(main, [patientZero, humanLeader], "zombieGame")
 
-def VIP(main):
+def Teams(main):
     main.clearScreen()
     noKillClub = []
     membersList = []

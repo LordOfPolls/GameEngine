@@ -12,6 +12,14 @@ from backend import responseHandler as RH
 from backend import cosmetics
 from backend import menu
 
+# todo: Support for configuration file to help future committees after I, Dan, leave
+# todo: Support for generating a killsheet for other societies -- unlikely, but a nice thought
+# todo: COMMENTS! I really let the commenting slack, i should fix that
+# todo: Make game definitions easier to make
+# todo: Improve UI in all sections of the program, no more Y/N typing
+# todo: Add self authentication script, so anyone can run this
+# todo: Backup past hunts to the cloud. Maybe Gists?
+
 class Main:
     def __init__(self):
         """Defines variables that the main class will use"""
