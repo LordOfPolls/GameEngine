@@ -2,6 +2,7 @@
 ### This of course assumes you have both python and pip installed
 
 google-api-python-client
+google_auth_oauthlib
 oauth2client
 httplib2
 cursor

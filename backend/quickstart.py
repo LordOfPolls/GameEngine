@@ -28,6 +28,14 @@ def main():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
+            os.system("cls")
+            print("Hi, you likely havent setup the python api yet, lets do that now")
+            print('Go to this URL: https://developers.google.com/sheets/api/quickstart/python\n and press "Enable Google Sheets API"\nThen press "Download Client Configuration"')
+            input("Press enter/return to continue")
+            os.system("cls")
+            print("You should now have a file called \"credentials.json\" in your downloads. Move that to the same place as \"run.bat\"")
+            input("Press enter/return to continue")
+            os.system("cls")
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server()

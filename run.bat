@@ -1,6 +1,6 @@
 @echo off
 echo Verifying python is installed
-WHERE pythons
+WHERE python
 IF %ERRORLEVEL% NEQ 0 start "" https://www.python.org/ftp/python/3.5.4/python-3.5.4-amd64.exe
 
 echo Checking and installing dependencies

@@ -29,9 +29,13 @@ def getValues(offline):
         f = open("offlineMemberList", "wb")
         pickle.dump(values, f)
     except:
-        offline = True
-        f = open("offlineMemberList", "rb")
-        values = pickle.load(f)
+        try:
+            offline = True
+            f = open("offlineMemberList", "rb")
+            values = pickle.load(f)
+        except FileNotFoundError:
+            print("Google likely hasnt been setup, booting quickstart")
+            os.system("python backend/quickstart.py")
     return values
 
 def __getCredentials():
