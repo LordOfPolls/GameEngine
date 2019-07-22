@@ -1,6 +1,8 @@
 import os
 import pprint
 import re
+import sys
+import getopt
 import shutil
 from collections import defaultdict
 from time import sleep
@@ -21,7 +23,7 @@ from backend import menu
 # todo: Backup past hunts to the cloud. Maybe Gists?
 
 class Main:
-    def __init__(self):
+    def __init__(self, argv=None):
         """Defines variables that the main class will use"""
         self.cacheDir = "cache"  # the directory of the cache
         self.pprint = pprint.PrettyPrinter().pprint  # pprint instance so i dont need to type as much
@@ -33,6 +35,17 @@ class Main:
         self.weeksWithoutRepeat = 6  # how many weeks gameEngine should try not to repeat for
         self.games = games
         self.logo = cosmetics.getLogo()
+
+        self.rank = None
+        self.firstName = None
+        self.lastName = None
+        self.optIn = None
+        self.alias = None
+        self.ID = None
+        self.kills = None
+        self.credits = None
+        self.bounty = None
+        self.notes = None
 
         self.dataRows = [  # The row letter for each bit of information on google sheets
             "A",  # Rank
@@ -48,6 +61,14 @@ class Main:
         self.debugMode = True  # disables cosmetics, and enables more verbose outputs
         self.detailMode = False  # detailed output by default, where applicable
         self.incCouncil = True  # default to include council, and not ask
+
+    def debugPrint(self, message, pretty=False):
+        if self.debugMode:
+            if pretty:
+                print("DEBUG: ", end="")
+                self.pprint(message)
+            else:
+                print("DEBUG:", message)
 
     def clearScreen(self):
         """Wrapper function to clear the screen and keep the logo on screen"""
@@ -92,26 +113,16 @@ class Main:
             sleep(1)
         exit(0)
 
-    @staticmethod
-    def alphabet_position(text):
-        LETTERS = {letter: int(index) for index, letter in enumerate(ascii_lowercase, start=0)}
-
-        data = ""
-        for char in text:
-            data += char
-
-        data = data.lower()
-
-        numbers = [LETTERS[character] for character in data if character in LETTERS]
-
-        return numbers
-
     def _dumpAndOpen(self):
         """Dumps the current targetpool to a file and opens it"""
         f = open("temp.txt", "w")
         f.write("**KILLSHEET DUMP**\n\n")
         for member in self.targetPool:
-            f.write(member['name'])
+            formatted = "{}: {}|| Kills: {} || Credits: {}".format(
+                member['rank'], member['name'],
+                member['kills'], member['credits']
+            )
+            f.write(formatted)
             f.write("\n")
         f.close()
         self.clearScreen()
@@ -132,41 +143,49 @@ class Main:
         self.clearScreen()
 
     def _processMembers(self):
-        dataRows = self.alphabet_position(self.dataRows)
         data = defaultdict()  # creates an empty, assignable dictionary
+
+        self.debugPrint("Determining rows...")
+        self.rank = self.values[0].index("Rank")
+        self.firstName = self.values[0].index("First Name")
+        self.lastName = self.values[0].index("Last Name")
+        self.optIn = self.values[0].index("Opt In")
+        self.alias = self.values[0].index("Assassin Alias")
+        self.ID = self.values[0].index("ID/Email")
+        self.kills = self.values[0].index("Kills")
+        self.credits = self.values[0].index("Credits")
+        self.bounty = self.values[0].index("Bounty")
+        self.notes = self.values[0].index("Notes")
+        self.values.remove(self.values[0])
+        self.debugPrint([self.rank, self.firstName, self.lastName, self.optIn, self.alias, self.ID, self.kills, self.credits, self.bounty, self.notes], pretty=True)
+
         for row in self.values:
             try:
-                if row[5] == "TRUE" and "{} {}".format(row[1], row[2]) not in self.optOut: #  is this twat in the opt out list?
-                    if row[0] == "Council" and not self.incCouncil:  # is this a council member, and are we including them?
-                        if self.debugMode:
-                            print("{} is Council, and council are opted out".format(row[1] + " " + row[2]))
+                if row[self.optIn] == "TRUE" and "{} {}".format(row[self.firstName], row[self.lastName]) not in self.optOut: #  are they in the opt out list?
+                    if row[self.rank] == "Council" and not self.incCouncil:  # is this a council member, and are we including them?
+                        self.debugPrint("{} is Council, and council are opted out".format(row[1] + " " + row[2]))
+                    elif row[self.notes] == "No Membership Paid":
+                        self.debugPrint("{} {} hasn't paid membership, unable to opt in".format(row[self.firstName], row[self.lastName]))
+                    elif "Strike: II" in row[self.notes]:
+                        self.debugPrint("{} {} has 2 strikes, unable to opt in".format(row[self.firstName], self.lastName))
                     else:
                         # the basic data structure of a member, will be replaced with a class rather than a dictionary
-                        data = {'rank': row[dataRows[0]],
-                                'name': row[dataRows[1]] + " " + row[dataRows[2]],
-                                'alias': row[dataRows[3]],
-                                'id': row[dataRows[4]],
-                                'kills': float(re.sub("[^0-9]", "", str(row[dataRows[5]]))),
-                                'credits': float(re.sub("[^0-9]", "", str(row[dataRows[6]])))
+                        data = {'rank': row[self.rank],
+                                'name': row[self.firstName]+ " " + row[self.lastName],
+                                'alias': row[self.alias],
+                                'id': row[self.ID],
+                                'kills': float(re.sub("[^0-9]", "", str(row[self.kills]))),
+                                'credits': float(re.sub("[^0-9]", "", str(row[self.credits])))
                                 }
                         self.targetPool.append(data)  # add this member to the targetPool
-                        if self.debugMode:
-                            print("{} has been opted in".format(data['name']))
-                elif row[5] == "FALSE" and row[0] != "Council" and "{} {}".format(row[1], row[2]) not in self.optOut:
+                        self.debugPrint("{} has been opted in".format(data['name']))
+                elif row[self.optIn] == "FALSE" and row[self.rank] != "Council" and "{} {}".format(row[self.firstName], row[self.lastName]) not in self.optOut:
                     # Is this person set to be opted out on the killSheet?
-                    if self.debugMode:
-                        print("{} is set to opt out on the sheet".format(row[1] + " " + row[2]))
+                    self.debugPrint("{} is set to opt out on the sheet".format(row[self.firstName] + " " + row[self.lastName]))
             except Exception as e:
                 # if this code EVER hits an error, i can put money on it being a formatting error on the killSheet
-                print("Unable to add {} due to invalid data formatting || {}".format(row[1], e))
-        if self.debugMode:
-            print("{} members opted in\n{} members opted out".format(len(self.targetPool), len(self.values)-len(self.targetPool)))
-        # if len(self.targetPool) == 1 or len(self.targetPool) % 2 == 1:
-            # You need an even number to balance the games, and gameEngine cant yet support one person being targeted
-            # by two people at once
-            # print("{}Even number of members required for hunt to be possible{}".format(formatters.formatters.red, formatters.formatters.default))
-            # input("Press any key to exit")
-            # exit()
+                print("Unable to add {} due to invalid data formatting || {}".format(row[self.firstName], e))
+        self.debugPrint("{} members opted in\n{} members opted out".format(len(self.targetPool), len(self.values)-len(self.targetPool)))
 
     def mainMenu(self):
         if not self.debugMode:
@@ -201,5 +220,5 @@ class Main:
 
 if __name__ == "__main__":
     # the code wont execute if you import it, only if you open it
-    assassin = Main()  # run the innit code once ONLY (apparently this was necessary :( )
+    assassin = Main(sys.argv[1:])  # run the innit code once ONLY (apparently this was necessary :( )
     assassin.mainMenu()  # BOOT
