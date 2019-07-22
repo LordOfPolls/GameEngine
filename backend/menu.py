@@ -25,7 +25,7 @@ class Engine:
         self.options = options  # The list of options defined above
         self.location = 0  # The current item selected
         self.lastRender = ""
-        self.CoreLoop = coreLoop  # The main class from GameEngine.py, allows callbacks
+        self.CoreLoop = coreLoop  # The main class from main.py, allows callbacks
         self._fixOptions()
 
     def _fixOptions(self):

@@ -58,7 +58,7 @@ class Main:
         ]
 
         ### Overrides ###
-        self.debugMode = True  # disables cosmetics, and enables more verbose outputs
+        self.debugMode = False  # disables cosmetics, and enables more verbose outputs
         self.detailMode = False  # detailed output by default, where applicable
         self.incCouncil = True  # default to include council, and not ask
 

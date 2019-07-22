@@ -1,2 +1,2 @@
 @echo off
-python GameEngine.py
+python main.py
