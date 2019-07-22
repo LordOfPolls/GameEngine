@@ -22,7 +22,7 @@ def getValues(offline):
         discoveryUrl = 'https://sheets.googleapis.com/$discovery/rest?''version=v4'
         service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
         spreadsheetId = '15u3Z5HCPKJdskvmhlVRvromgiSk6WmT-jX0tdLn0kw8'
-        rangeName = 'A2:J'
+        rangeName = 'A1:K'
         result = service.spreadsheets().values().get(
             spreadsheetId=spreadsheetId, range=rangeName).execute()
         values = result.get('values', [])
