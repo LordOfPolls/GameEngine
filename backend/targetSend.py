@@ -3,7 +3,9 @@ import datetime
 import random
 import os
 import getpass
+import time
 from .formatters import formatters
+from .timetable import Timetable
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -29,6 +31,7 @@ class SMEmail:
         """Sends the emails, after making you log in"""
         if not self.loggedIn:  # if they havent logged in yet
             os.system("cls")
+            print("¬LOGIN MODE!¬\n")
             while not self.loggedIn:
                 emailAddr = input("Email: ")
                 password = getpass.getpass()  # hide their password entry
@@ -37,7 +40,11 @@ class SMEmail:
                 except smtplib.SMTPAuthenticationError:
                     os.system("cls")
                     print("{}Login Failed{}".format(formatters.red, formatters.default))
-                finally:  # if successful login with no errors
+                    time.sleep(2)
+                except Exception as e:
+                    print("{}Login Failed{}".format(formatters.red, formatters.default))
+                    time.sleep(2)
+                else:  # if successful login with no errors
                     self.loggedIn = True
                     os.system("cls")
                     print("{}Logged in as {}!{}".format(formatters.green, emailAddr, formatters.default))
@@ -67,7 +74,13 @@ class SMEmail:
         for pair in targets:
             i += 1
             html = open("{}/hunt.html".format(emailTemplateLocation)).read()  # Get the template then edit it
-            html = html.replace("[Greeting]", self.greetingGen()).replace("[AddressName]", pair[0]['name']).replace("[TargetName]", pair[1]['name'])
+
+            timetable = Timetable.next7(Timetable.TDecode(pair[1]['timetable']))
+
+            html = html.replace("[Greeting]", self.greetingGen())\
+                .replace("[AddressName]", pair[0]['name'])\
+                .replace("[TargetName]", pair[1]['name'])\
+                .replace("[TimeTable]", timetable)
             msg = self.assembleEmail(html, pair[0]['id'])  # assemble the email
             if msg is None:
                 print("Not sending Email to {}|Reason: No valid ID/Email".format(pair[0]['name']))  # y u no send

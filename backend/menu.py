@@ -15,7 +15,8 @@ defaultOptions = [
     ["Juggernaut", "self.CoreLoop.games.Juggernaut()"],
     ["Tea Party", "self.CoreLoop.games.TeaParty()"],
     ["Clean Slate", "self.CoreLoop._cleanSlate()"],
-    ["Dump", "self.CoreLoop._dumpAndOpen()"]
+    ["Dump", "self.CoreLoop._dumpAndOpen()"],
+    ["Refresh", "self.CoreLoop.updateMembers()"]
 ]
 key = ""
 

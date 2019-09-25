@@ -1,18 +1,18 @@
 import os
 import pprint
 import re
-import sys
-import getopt
 import shutil
+import sys
 from collections import defaultdict
 from time import sleep
-from string import ascii_lowercase
+
 from backend import backendGoogle
-from backend import games
-from backend import formatters
-from backend import responseHandler as RH
 from backend import cosmetics
+from backend import formatters
+from backend import games
 from backend import menu
+from backend import responseHandler as RH
+
 
 # todo: Support for configuration file to help future committees after I, Dan, leave
 # todo: Support for generating a killsheet for other societies -- unlikely, but a nice thought
@@ -42,20 +42,11 @@ class Main:
         self.optIn = None
         self.alias = None
         self.ID = None
+        self.timetable = None
         self.kills = None
         self.credits = None
         self.bounty = None
         self.notes = None
-
-        self.dataRows = [  # The row letter for each bit of information on google sheets
-            "A",  # Rank
-            "B",  # First Name
-            "C",  # Last Name
-            "H",  # Alias
-            "D",  # ID/Email
-            "I",  # Kills
-            "J"  # Credits
-        ]
 
         ### Overrides ###
         self.debugMode = False  # disables cosmetics, and enables more verbose outputs
@@ -152,6 +143,7 @@ class Main:
         self.optIn = self.values[0].index("Opt In")
         self.alias = self.values[0].index("Assassin Alias")
         self.ID = self.values[0].index("ID/Email")
+        self.timetable = self.values[0].index("Timetable Link")
         self.kills = self.values[0].index("Kills")
         self.credits = self.values[0].index("Credits")
         self.bounty = self.values[0].index("Bounty")
@@ -164,7 +156,7 @@ class Main:
                 if row[self.optIn] == "TRUE" and "{} {}".format(row[self.firstName], row[self.lastName]) not in self.optOut: #  are they in the opt out list?
                     if row[self.rank] == "Council" and not self.incCouncil:  # is this a council member, and are we including them?
                         self.debugPrint("{} is Council, and council are opted out".format(row[1] + " " + row[2]))
-                    elif row[self.notes] == "No Membership Paid":
+                    elif "No Membership Paid" in row[self.notes]:
                         self.debugPrint("{} {} hasn't paid membership, unable to opt in".format(row[self.firstName], row[self.lastName]))
                     elif "Strike: II" in row[self.notes]:
                         self.debugPrint("{} {} has 2 strikes, unable to opt in".format(row[self.firstName], self.lastName))
@@ -174,6 +166,7 @@ class Main:
                                 'name': row[self.firstName]+ " " + row[self.lastName],
                                 'alias': row[self.alias],
                                 'id': row[self.ID],
+                                'timetable': None if row[self.timetable] == "Pending" else row[self.timetable],
                                 'kills': float(re.sub("[^0-9]", "", str(row[self.kills]))),
                                 'credits': float(re.sub("[^0-9]", "", str(row[self.credits])))
                                 }
@@ -214,9 +207,18 @@ class Main:
             sleep(0.7)
 
         self._options()
-        menuManager = menu.Engine(coreLoop=self)
-        menuManager.loop()
+        if not self.debugMode:
+            menuManager = menu.Engine(coreLoop=self)
+            menuManager.loop()
+        else:
+            games.theHunt(self)
 
+    def updateMembers(self):
+        self.values = []
+        self.targetPool = []
+        self.values = backendGoogle.getValues(self.offline)
+        self._processMembers()
+        print("Members list updated")
 
 if __name__ == "__main__":
     # the code wont execute if you import it, only if you open it
