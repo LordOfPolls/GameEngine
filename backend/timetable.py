@@ -74,7 +74,14 @@ class Timetable:
         if events is None:
             return "Your target has chosen not to share their timetable, sorry"
         text = ""
+        lastDate = None
         for event in events:
-            if datetime.now(timezone.utc) < event.date < (datetime.now(timezone.utc) + timedelta(days=7)):
-                text = text + ("{t}->{e} || {m} || {r}<br>".format(t=event.Ftime, e=event.end, m=event.type.lower(), r=event.room)).replace("||", "<b>||</b>")
+            if datetime.now(timezone.utc) <= event.date <= (datetime.now(timezone.utc) + timedelta(days=8)):
+                TempText = ("||{t}->{e} || {type:<9} || {r:<7} ||<br>".format(t=event.Ftime, e=event.end, type=event.type.lower().capitalize() , r=event.room))
+                TempDate = TempText[:5]
+                if TempDate != lastDate:
+                    text += "="*len(TempText.replace("<br>", "")) + "<br>"
+                    lastDate = TempDate
+                text += TempText
+
         return text
