@@ -52,6 +52,8 @@ class Main:
         self.debugMode = True  # disables cosmetics, and enables more verbose outputs
         self.detailMode = False  # detailed output by default, where applicable
         self.incCouncil = True  # default to include council, and not ask
+        self.paidCheck = False  # Should gameEngine reject people who havent paid?
+        self.timetableCheck = False  # Should gameEngine reject people without timetables?
 
     def debugPrint(self, message, pretty=False):
         if self.debugMode:
@@ -156,7 +158,7 @@ class Main:
                 if row[self.optIn] == "TRUE" and "{} {}".format(row[self.firstName], row[self.lastName]) not in self.optOut: #  are they in the opt out list?
                     if row[self.rank] == "Council" and not self.incCouncil:  # is this a council member, and are we including them?
                         self.debugPrint("{} is Council, and council are opted out".format(row[1] + " " + row[2]))
-                    elif "No Membership Paid" in row[self.notes]:
+                    elif "No Membership Paid" in row[self.notes] and self.paidCheck:
                         self.debugPrint("{} {} hasn't paid membership, unable to opt in".format(row[self.firstName], row[self.lastName]))
                     elif "Strike: II" in row[self.notes]:
                         self.debugPrint("{} {} has 2 strikes, unable to opt in".format(row[self.firstName], self.lastName))
