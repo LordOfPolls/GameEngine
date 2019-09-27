@@ -76,11 +76,18 @@ class SMEmail:
             html = open("{}/hunt.html".format(emailTemplateLocation)).read()  # Get the template then edit it
 
             timetable = Timetable.next7(Timetable.TDecode(pair[1]['timetable']))
+            tNotes = pair[1]['notes'].split("| ")
+            notes = ""
+            for note in tNotes:
+                if "strike" not in note.lower():
+                    if "no membership paid" not in note.lower():
+                        notes += note + "<br>"
 
             html = html.replace("[Greeting]", self.greetingGen())\
                 .replace("[AddressName]", pair[0]['name'])\
                 .replace("[TargetName]", pair[1]['name'])\
-                .replace("[TimeTable]", timetable)
+                .replace("[TimeTable]", timetable)\
+                .replace("[notes]", notes)
             msg = self.assembleEmail(html, pair[0]['id'])  # assemble the email
             if msg is None:
                 print("Not sending Email to {}|Reason: No valid ID/Email".format(pair[0]['name']))  # y u no send

@@ -170,7 +170,8 @@ class Main:
                                 'id': row[self.ID],
                                 'timetable': None if row[self.timetable] == "Pending" else row[self.timetable],
                                 'kills': float(re.sub("[^0-9]", "", str(row[self.kills]))),
-                                'credits': float(re.sub("[^0-9]", "", str(row[self.credits])))
+                                'credits': float(re.sub("[^0-9]", "", str(row[self.credits]))),
+                                'notes': row[self.notes]
                                 }
                         self.targetPool.append(data)  # add this member to the targetPool
                         self.debugPrint("{} has been opted in".format(data['name']))
